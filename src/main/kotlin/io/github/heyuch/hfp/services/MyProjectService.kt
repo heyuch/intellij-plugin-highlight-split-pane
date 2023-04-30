@@ -1,9 +1,9 @@
-package com.github.heyuch.intellijpluginhighlightfocusedpane.services
+package io.github.heyuch.hfp.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.github.heyuch.intellijpluginhighlightfocusedpane.MyBundle
+import io.github.heyuch.hfp.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {

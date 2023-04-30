@@ -1,4 +1,4 @@
-package com.github.heyuch.intellijpluginhighlightfocusedpane
+package io.github.heyuch.hfp
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

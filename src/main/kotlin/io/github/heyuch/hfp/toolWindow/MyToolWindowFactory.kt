@@ -1,4 +1,4 @@
-package com.github.heyuch.intellijpluginhighlightfocusedpane.toolWindow
+package io.github.heyuch.hfp.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,8 +8,8 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.github.heyuch.intellijpluginhighlightfocusedpane.MyBundle
-import com.github.heyuch.intellijpluginhighlightfocusedpane.services.MyProjectService
+import io.github.heyuch.hfp.MyBundle
+import io.github.heyuch.hfp.services.MyProjectService
 import javax.swing.JButton
 
 

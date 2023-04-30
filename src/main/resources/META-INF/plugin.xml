@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.heyuch.intellijpluginhighlightfocusedpane</id>
-    <name>intellij-plugin-highlight-focused-pane Template</name>
+    <id>io.github.heyuch</id>
+    <name>Highlight-Focused-Pane</name>
     <vendor>heyuch</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -9,10 +9,11 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.heyuch.intellijpluginhighlightfocusedpane.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="io.github.heyuch.hfp.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="com.github.heyuch.intellijpluginhighlightfocusedpane.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
+        <listener class="io.github.heyuch.hfp.listeners.MyFrameStateListener"
+                  topic="com.intellij.ide.FrameStateListener"/>
     </applicationListeners>
 </idea-plugin>

@@ -1,4 +1,4 @@
-package com.github.heyuch.intellijpluginhighlightfocusedpane.listeners
+package io.github.heyuch.hfp.listeners
 
 import com.intellij.ide.FrameStateListener
 import com.intellij.openapi.diagnostic.thisLogger
