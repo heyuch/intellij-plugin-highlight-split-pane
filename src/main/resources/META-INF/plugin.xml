@@ -19,8 +19,8 @@
     </extensions>
 
     <applicationListeners>
-        <listener class="io.github.heyuch.hfp.RegisterListener"
-                  topic="com.intellij.ide.FrameStateListener"/>
+        <listener class="io.github.heyuch.hfp.AppListener"
+                  topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
 
 </idea-plugin>

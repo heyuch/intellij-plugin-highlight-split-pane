@@ -1,13 +1,14 @@
 package io.github.heyuch.hfp
 
-import com.intellij.ide.FrameStateListener
+import com.intellij.openapi.application.ApplicationActivationListener
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.wm.IdeFrame
 
-class RegisterListener : FrameStateListener {
+class AppListener : ApplicationActivationListener {
 
     private var initialized = false
 
-    override fun onFrameActivated() {
+    override fun applicationActivated(ideFrame: IdeFrame) {
         if (initialized) {
             return
         }
@@ -19,5 +20,4 @@ class RegisterListener : FrameStateListener {
 
         initialized = true
     }
-
 }
