@@ -13,12 +13,15 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeGlassPaneUtil
 import com.intellij.util.ui.GraphicsUtil
 import com.intellij.util.ui.JBUI
+import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics2D
 import java.awt.event.FocusEvent
 
 @Service(Service.Level.APP)
 class HighlightFocusedPaneService : FocusChangeListener, Disposable {
+
+    private val overlayColor = JBUI.CurrentTheme.DefaultTabs.inactiveColoredTabBackground()
 
     private val editorDisposers: MutableMap<Editor, Runnable> = HashMap()
 
@@ -40,6 +43,10 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
             firstRun = false
         }
 
+        // Editor lost focus, the next focused target may be the project view,
+        // the tool window or user swapped the app... In such scenario we should
+        // not add overlay to the editor until we can be sure that the newly
+        // focused is another editor.
         if (lostFocusEditor != null) {
             addOverlayToLostFocusEditor(lostFocusEditor, editor)
             lostFocusEditor = null
@@ -47,14 +54,12 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
 
         removeOverlay(editor)
 
+        // Editor close would not trigger focusLost event, we need check the
+        // cached editorDisposers to manually to prevent memory leak.
         cleanupDisposedEditors()
     }
 
     override fun focusLost(editor: Editor, event: FocusEvent) {
-        // Editor lost focus, the newly focused target may be the project view,
-        // the tool window or user swapped the app... In such scenario we should
-        // not add overlay to the editor until we can be sure that the newly focused
-        // is another editor.
         lostFocusEditor = editor
     }
 
@@ -96,7 +101,7 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
             return
         }
 
-        val painter = OverlayPainter(component)
+        val painter = OverlayPainter(component, overlayColor)
         glassPane.addPainter(component, painter, painter)
 
         component.repaint()
@@ -130,7 +135,7 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
     }
 
 
-    class OverlayPainter(private var target: Component?) : AbstractPainter(), Disposable {
+    class OverlayPainter(private var target: Component?, private val color: Color) : AbstractPainter(), Disposable {
 
         override fun executePaint(component: Component?, g: Graphics2D?) {
             if (component == null || g == null || target == null) {
@@ -139,7 +144,7 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
 
             GraphicsUtil.setupAAPainting(g)
 
-            g.color = JBUI.CurrentTheme.DragAndDrop.Area.BACKGROUND
+            g.color = color
             g.fill(component.bounds)
         }
 
