@@ -2,14 +2,17 @@ package io.github.heyuch.hfp
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.editor.ClientEditorManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.editor.ex.EditorEventMulticasterEx
 import com.intellij.openapi.editor.ex.FocusChangeListener
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.ui.AbstractPainter
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeGlassPaneUtil
+import com.intellij.util.containers.stream
 import com.intellij.util.ui.GraphicsUtil
 import java.awt.Color
 import java.awt.Component
@@ -22,6 +25,7 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
 
     private var settings = SettingsState.getInstance()
 
+
     private val editorDisposers: MutableMap<Editor, Runnable> = HashMap()
 
     private var lostFocusEditor: Editor? = null
@@ -29,7 +33,8 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     private var firstRun = true
 
     fun init() {
-        val multicaster = EditorFactory.getInstance().eventMulticaster
+        val editorFactory = EditorFactory.getInstance()
+        val multicaster = editorFactory.eventMulticaster
 
         if (multicaster is EditorEventMulticasterEx) {
             multicaster.addFocusChangeListener(this, this)
@@ -41,6 +46,10 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     override fun focusGained(editor: Editor, event: FocusEvent) {
         if (!enabled()) {
             removeAllOverlays()
+            return
+        }
+
+        if (editor.editorKind != EditorKind.MAIN_EDITOR) {
             return
         }
 
@@ -73,7 +82,17 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
             return
         }
 
+        if (editor.editorKind != EditorKind.MAIN_EDITOR) {
+            return
+        }
+
         lostFocusEditor = editor
+    }
+
+    override fun settingsChanged() {
+        // The settings takes effect immediately, so that users can view the
+        // effect in real time.
+        refreshOverlays()
     }
 
     override fun dispose() {
@@ -90,12 +109,6 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         }
 
         return s.enabled
-    }
-
-    override fun settingsChanged() {
-        // The settings takes effect immediately, so that users can view the
-        // effect in real time.
-        refreshOverlays()
     }
 
     private fun refreshOverlays() {
@@ -138,8 +151,18 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     }
 
     private fun addOverlayToUnfocusedEditors(focused: Editor) {
-        ClientEditorManager.getCurrentInstance()
-            .editors()
+        val project = focused.project
+        if (project == null) {
+            return
+        }
+
+        val fileEditorManager = FileEditorManager.getInstance(project)
+        val fileEditors = fileEditorManager.allEditors
+
+        fileEditors.stream()
+            .filter { editor -> editor is TextEditor }
+            .map { editor -> editor as TextEditor }
+            .map { editor -> editor.editor }
             .filter { editor -> editor != focused }
             .forEach { editor -> addOverlay(editor) }
     }
