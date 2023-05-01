@@ -25,7 +25,6 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
 
     private var settings = SettingsState.getInstance()
 
-
     private val editorDisposers: MutableMap<Editor, Runnable> = HashMap()
 
     private var lostFocusEditor: Editor? = null
@@ -72,7 +71,8 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         removeOverlay(editor)
 
         // Editor close would not trigger focusLost event, we need check the
-        // cached editorDisposers to manually to prevent memory leak.
+        // cached editorDisposers to remove disposed editor references to
+        // prevent memory leaks.
         cleanupDisposedEditors()
     }
 
@@ -93,6 +93,10 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         // The settings takes effect immediately, so that users can view the
         // effect in real time.
         refreshOverlays()
+
+        if (!enabled()) {
+            firstRun = true
+        }
     }
 
     override fun dispose() {
@@ -169,6 +173,10 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
 
     private fun addOverlay(editor: Editor) {
         removeOverlay(editor)
+
+        if (editor.isDisposed) {
+            return
+        }
 
         val component = editor.component
 

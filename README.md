@@ -24,7 +24,8 @@
   about releases containing new features and fixes.
 
 <!-- Plugin description -->
-This Intellij Platform Plugin is used to highlight the focused split window in Intellij Idea.
+This plugin helps identify which pane is currently focused, which is useful when opened multiple split windows with
+ideavim.
 <!-- Plugin description end -->
 
 ## Installation
