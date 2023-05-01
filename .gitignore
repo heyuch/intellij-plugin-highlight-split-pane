@@ -2,3 +2,5 @@
 .idea
 .qodana
 build
+certificate
+local.properties
