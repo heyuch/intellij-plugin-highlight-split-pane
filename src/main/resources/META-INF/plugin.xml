@@ -8,8 +8,18 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable
+                instance="io.github.heyuch.hfp.SettingsConfigurable"
+                id="io.github.heyuch.hfp.SettingsConfigurable"
+                displayName="High Light Focused Pane"
+        />
+        <applicationService
+                serviceImplementation="io.github.heyuch.hfp.SettingsState"/>
+    </extensions>
+
     <applicationListeners>
-        <listener class="io.github.heyuch.hfp.listeners.HighlightFocusedPaneListener"
+        <listener class="io.github.heyuch.hfp.RegisterListener"
                   topic="com.intellij.ide.AppLifecycleListener"/>
     </applicationListeners>
 

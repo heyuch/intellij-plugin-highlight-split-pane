@@ -1,6 +1,5 @@
-package io.github.heyuch.hfp.services
+package io.github.heyuch.hfp
 
-import com.intellij.diagnostic.ActivityImpl.listener
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.ClientEditorManager
@@ -12,16 +11,16 @@ import com.intellij.openapi.ui.AbstractPainter
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeGlassPaneUtil
 import com.intellij.util.ui.GraphicsUtil
-import com.intellij.util.ui.JBUI
 import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics2D
 import java.awt.event.FocusEvent
+import java.util.function.Predicate
 
 @Service(Service.Level.APP)
-class HighlightFocusedPaneService : FocusChangeListener, Disposable {
+class HighlightService : FocusChangeListener, SettingsListener, Disposable {
 
-    private val overlayColor = JBUI.CurrentTheme.DefaultTabs.inactiveColoredTabBackground()
+    private var settings = SettingsState.getInstance()
 
     private val editorDisposers: MutableMap<Editor, Runnable> = HashMap()
 
@@ -35,20 +34,29 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
         if (multicaster is EditorEventMulticasterEx) {
             multicaster.addFocusChangeListener(this, this)
         }
+
+        settings?.registerListener(this)
     }
 
     override fun focusGained(editor: Editor, event: FocusEvent) {
+        if (!enabled()) {
+            removeAllOverlays()
+            return
+        }
+
         if (firstRun) {
             addOverlayToUnfocusedEditors(editor)
             firstRun = false
         }
 
-        // Editor lost focus, the next focused target may be the project view,
+        // Editor lost focus, the next focusing target may be the project view,
         // the tool window or user swapped the app... In such scenario we should
         // not add overlay to the editor until we can be sure that the newly
         // focused is another editor.
         if (lostFocusEditor != null) {
-            addOverlayToLostFocusEditor(lostFocusEditor, editor)
+            if (lostFocusEditor != editor) {
+                addOverlay(lostFocusEditor!!)
+            }
             lostFocusEditor = null
         }
 
@@ -60,14 +68,73 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
     }
 
     override fun focusLost(editor: Editor, event: FocusEvent) {
+        if (!enabled()) {
+            removeAllOverlays()
+            return
+        }
+
         lostFocusEditor = editor
     }
 
     override fun dispose() {
-        listener = null
+        settings?.unregisterListener(this)
 
         editorDisposers.forEach { (_, disposer) -> disposer.run() }
         editorDisposers.clear()
+    }
+
+    private fun enabled(): Boolean {
+        val s = settings
+        if (s == null) {
+            return false
+        }
+
+        return s.enabled
+    }
+
+    override fun settingsChanged() {
+        // The settings takes effect immediately, so that users can view the
+        // effect in real time.
+        refreshOverlays()
+    }
+
+    private fun refreshOverlays() {
+        if (editorDisposers.isEmpty()) {
+            return
+        }
+
+        if (!enabled()) {
+            removeAllOverlays()
+            return
+        }
+
+        val editors = ArrayList(editorDisposers.keys)
+
+        for (editor in editors) {
+            removeOverlay(editor)
+            addOverlay(editor)
+        }
+    }
+
+    private fun removeAllOverlays() {
+        removeOverlaysIf { _ -> true }
+    }
+
+    private fun removeOverlaysIf(predicate: Predicate<Editor>) {
+        if (editorDisposers.isEmpty()) {
+            return
+        }
+
+        val iter = editorDisposers.iterator()
+
+        while (iter.hasNext()) {
+            val (editor, disposer) = iter.next()
+
+            if (predicate.test(editor)) {
+                disposer.run()
+                iter.remove()
+            }
+        }
     }
 
     private fun addOverlayToUnfocusedEditors(focused: Editor) {
@@ -75,16 +142,6 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
             .editors()
             .filter { editor -> editor != focused }
             .forEach { editor -> addOverlay(editor) }
-    }
-
-    private fun addOverlayToLostFocusEditor(lostFocused: Editor?, focused: Editor) {
-        if (lostFocused == null) {
-            return
-        }
-
-        if (lostFocused != focused) {
-            addOverlay(lostFocused)
-        }
     }
 
     private fun addOverlay(editor: Editor) {
@@ -101,7 +158,8 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
             return
         }
 
-        val painter = OverlayPainter(component, overlayColor)
+        val color = getOverlayColor()
+        val painter = OverlayPainter(component, color)
         glassPane.addPainter(component, painter, painter)
 
         component.repaint()
@@ -110,6 +168,15 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
             Disposer.dispose(painter)
             component.repaint()
         }
+    }
+
+    private fun getOverlayColor(): Color {
+        val s = settings
+        if (s == null) {
+            return SettingsState.defaultOverlayColor
+        }
+
+        return s.getOverlayColor()
     }
 
     private fun removeOverlay(editor: Editor) {
@@ -122,20 +189,11 @@ class HighlightFocusedPaneService : FocusChangeListener, Disposable {
     }
 
     private fun cleanupDisposedEditors() {
-        val iter = editorDisposers.iterator()
-
-        while (iter.hasNext()) {
-            val (editor, disposer) = iter.next()
-
-            if (editor.isDisposed) {
-                disposer.run()
-                iter.remove()
-            }
-        }
+        removeOverlaysIf { editor -> editor.isDisposed }
     }
 
-
-    class OverlayPainter(private var target: Component?, private val color: Color) : AbstractPainter(), Disposable {
+    internal class OverlayPainter(private var target: Component?, private val color: Color) : AbstractPainter(),
+        Disposable {
 
         override fun executePaint(component: Component?, g: Graphics2D?) {
             if (component == null || g == null || target == null) {
