@@ -24,8 +24,7 @@
   about releases containing new features and fixes.
 
 <!-- Plugin description -->
-This plugin helps identify which pane is currently split, which is useful when opened multiple split windows with
-ideavim.
+This plugin helps identify which split pane is currently focused.
 <!-- Plugin description end -->
 
 ## Installation
