@@ -1,8 +1,8 @@
 package io.github.heyuch.hsp
 
 import com.intellij.openapi.options.Configurable
-import org.jetbrains.annotations.Nls
 import javax.swing.JComponent
+import org.jetbrains.annotations.Nls
 
 class SettingsConfigurable : Configurable {
 

@@ -32,11 +32,9 @@ class SettingsState : PersistentStateComponent<SettingsState> {
             field = value
         }
 
-    @Transient
-    private var colorChanged = false
+    @Transient private var colorChanged = false
 
-    @Transient
-    private var overlayColor: JBColor? = null
+    @Transient private var overlayColor: JBColor? = null
 
     private val listeners: MutableList<SettingsListener> = ArrayList()
 
@@ -63,8 +61,8 @@ class SettingsState : PersistentStateComponent<SettingsState> {
 
     fun isModified(s: SettingsState): Boolean {
         return enabled != s.enabled ||
-                overlayLightColor != s.overlayLightColor ||
-                overlayDarkColor != s.overlayDarkColor
+            overlayLightColor != s.overlayLightColor ||
+            overlayDarkColor != s.overlayDarkColor
     }
 
     fun accept(s: SettingsState) {

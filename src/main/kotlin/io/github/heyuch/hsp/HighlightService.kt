@@ -29,9 +29,9 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
 
     private val settings = SettingsState.getInstance()
 
-    private val editorDisposers: MutableMap<Editor, Runnable> = ConcurrentHashMap()
+    private val overlayedEditors: MutableMap<Editor, Runnable> = ConcurrentHashMap()
 
-    private val lostFocusEditor = AtomicReference<Editor?>(null)
+    private val lostFocusEditorHolder = AtomicReference<Editor?>(null)
 
     private val firstRun = AtomicBoolean(true)
 
@@ -47,7 +47,7 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     }
 
     override fun focusGained(editor: Editor, event: FocusEvent) {
-        if (!enabled()) {
+        if (!enabled() || !isSplitWindows(editor)) {
             removeAllOverlays()
             return
         }
@@ -57,18 +57,26 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         }
 
         if (firstRun.get()) {
-            addOverlayToUnfocusedEditors(editor)
             firstRun.set(false)
+            addOverlayToUnfocusedEditors(editor)
         }
 
-        addOverlayToLostFocusEditor(editor)
+        val lostFocusEditor = lostFocusEditorHolder.get()
+        if (lostFocusEditor != null) {
+            lostFocusEditorHolder.set(null)
+
+            if (lostFocusEditor != editor) {
+                addOverlay(lostFocusEditor)
+            }
+        }
+
         removeOverlay(editor)
 
-        cleanupInvisibleEditors()
+        cleanupInvisibleOverlayedEditors()
     }
 
     override fun focusLost(editor: Editor, event: FocusEvent) {
-        if (!enabled()) {
+        if (!enabled() || !isSplitWindows(editor)) {
             removeAllOverlays()
             return
         }
@@ -79,16 +87,15 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         if (event.cause == FocusEvent.Cause.CLEAR_GLOBAL_FOCUS_OWNER) {
             return
         }
-        if (!hasSplitWindows(editor)) {
-            return
-        }
 
-        lostFocusEditor.set(editor)
+        lostFocusEditorHolder.set(editor)
     }
 
     override fun settingsChanged() {
         refreshOverlays()
 
+        // Reset firstRun state when users disabled plugin, so when plugin enabled
+        // later, we can add overlays to all unfocused editors.
         if (!enabled()) {
             firstRun.set(true)
         }
@@ -97,10 +104,10 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     override fun dispose() {
         settings?.unregisterListener(this)
 
-        lostFocusEditor.set(null)
+        lostFocusEditorHolder.set(null)
 
-        editorDisposers.forEach { (_, disposer) -> disposer.run() }
-        editorDisposers.clear()
+        overlayedEditors.forEach { (_, overlayDisposer) -> overlayDisposer.run() }
+        overlayedEditors.clear()
     }
 
     private fun enabled(): Boolean {
@@ -108,7 +115,7 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     }
 
     private fun refreshOverlays() {
-        if (editorDisposers.isEmpty()) {
+        if (overlayedEditors.isEmpty()) {
             return
         }
 
@@ -117,25 +124,22 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
             return
         }
 
-        val editors = ArrayList(editorDisposers.keys)
+        val editors = ArrayList(overlayedEditors.keys)
 
         for (editor in editors) {
+            removeOverlay(editor)
             addOverlay(editor)
         }
     }
 
     private fun addOverlayToUnfocusedEditors(focused: Editor) {
-        if (!hasSplitWindows(focused)) {
-            return
-        }
-
         val project = focused.project
         if (project == null) {
             return
         }
 
-        val mgr = FileEditorManager.getInstance(project)
-        val fileEditors = mgr.allEditors
+        val fileEditorMgr = FileEditorManager.getInstance(project)
+        val fileEditors = fileEditorMgr.allEditors
 
         fileEditors
             .stream()
@@ -147,7 +151,7 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
             .forEach { editor -> addOverlay(editor) }
     }
 
-    private fun hasSplitWindows(editor: Editor): Boolean {
+    private fun isSplitWindows(editor: Editor): Boolean {
         val project = editor.project
         if (project == null) {
             return false
@@ -161,56 +165,43 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         return false
     }
 
-    private fun addOverlayToLostFocusEditor(focused: Editor) {
-        val lostFocused = lostFocusEditor.get()
-        if (lostFocused == null) {
-            return
-        }
-
-        if (lostFocused == focused) {
-            lostFocusEditor.set(null)
-            return
-        }
-
-        if (!hasSplitWindows(focused)) {
-            lostFocusEditor.set(null)
-            return
-        }
-
-        addOverlay(lostFocused)
-
-        lostFocusEditor.set(null)
-    }
-
     private fun addOverlay(editor: Editor) {
-        removeOverlay(editor)
-
-        if (editor.isDisposed) {
+        if (hasOverlay(editor) || editor.isDisposed || !editor.component.isShowing) {
             return
         }
 
         val component = editor.component
-        if (!component.isShowing) {
+        val disposable = setOverlayPainter(component)
+        if (disposable == null) {
             return
         }
 
+        component.repaint()
+
+        overlayedEditors[editor] = Runnable {
+            Disposer.dispose(disposable)
+            component.repaint()
+        }
+    }
+
+    private fun setOverlayPainter(component: Component): Disposable? {
         val glassPane =
             try {
                 IdeGlassPaneUtil.find(component)
             } catch (ignored: IllegalArgumentException) {
-                return
+                return null
             }
 
         val color = getOverlayColor()
         val painter = OverlayPainter(component, color)
+
         glassPane.addPainter(component, painter, painter)
 
-        component.repaint()
+        return painter
+    }
 
-        editorDisposers[editor] = Runnable {
-            Disposer.dispose(painter)
-            component.repaint()
-        }
+    private fun hasOverlay(editor: Editor): Boolean {
+        return overlayedEditors.containsKey(editor)
     }
 
     private fun getOverlayColor(): Color {
@@ -222,32 +213,32 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
     }
 
     private fun removeOverlaysIf(predicate: Predicate<Editor>) {
-        if (editorDisposers.isEmpty()) {
+        if (overlayedEditors.isEmpty()) {
             return
         }
 
-        val iter = editorDisposers.iterator()
+        val iter = overlayedEditors.iterator()
 
         while (iter.hasNext()) {
-            val (editor, disposer) = iter.next()
+            val (editor, overlayDisposer) = iter.next()
 
             if (predicate.test(editor)) {
-                disposer.run()
+                overlayDisposer.run()
                 iter.remove()
             }
         }
     }
 
     private fun removeOverlay(editor: Editor) {
-        val disposer = editorDisposers[editor]
+        val overlayDisposer = overlayedEditors[editor]
 
-        if (disposer != null) {
-            disposer.run()
-            editorDisposers.remove(editor)
+        if (overlayDisposer != null) {
+            overlayDisposer.run()
+            overlayedEditors.remove(editor)
         }
     }
 
-    private fun cleanupInvisibleEditors() {
+    private fun cleanupInvisibleOverlayedEditors() {
         removeOverlaysIf { editor -> editor.isDisposed || !editor.component.isShowing }
     }
 
@@ -255,7 +246,7 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         AbstractPainter(), Disposable {
 
         override fun executePaint(component: Component?, g: Graphics2D?) {
-            if (component == null || g == null || target == null) {
+            if (component == null || g == null) {
                 return
             }
 
