@@ -1,4 +1,4 @@
-package io.github.heyuch.hfp
+package io.github.heyuch.hsp
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

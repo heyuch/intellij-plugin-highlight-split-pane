@@ -1,4 +1,4 @@
-package io.github.heyuch.hfp
+package io.github.heyuch.hsp
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -12,7 +12,7 @@ import java.awt.Color
 
 @State(
     name = "io.github.heyuch.hfp.AppSettingsState",
-    storages = [Storage("HighlightFocusedPane.xml")]
+    storages = [Storage("HighlightSplitPane.xml")]
 )
 class SettingsState : PersistentStateComponent<SettingsState> {
 

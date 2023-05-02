@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>io.github.heyuch</id>
-    <name>Highlight Focused Pane</name>
+    <name>Highlight Split Pane</name>
     <vendor url="https://github.com/heyuch">Yuchuan He</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -10,16 +10,16 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
-                instance="io.github.heyuch.hfp.SettingsConfigurable"
-                id="io.github.heyuch.hfp.SettingsConfigurable"
-                displayName="High Light Focused Pane"
+                instance="io.github.heyuch.hsp.SettingsConfigurable"
+                id="io.github.heyuch.hsp.SettingsConfigurable"
+                displayName="Highlight Split Pane"
         />
         <applicationService
-                serviceImplementation="io.github.heyuch.hfp.SettingsState"/>
+                serviceImplementation="io.github.heyuch.hsp.SettingsState"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="io.github.heyuch.hfp.AppListener"
+        <listener class="io.github.heyuch.hsp.AppListener"
                   topic="com.intellij.openapi.application.ApplicationActivationListener"/>
     </applicationListeners>
 

@@ -1,4 +1,4 @@
-package io.github.heyuch.hfp
+package io.github.heyuch.hsp
 
 import com.intellij.ui.ColorPanel
 import com.intellij.ui.components.JBCheckBox

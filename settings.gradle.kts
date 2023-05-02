@@ -1,1 +1,1 @@
-rootProject.name = "intellij-plugin-highlight-focused-pane"
+rootProject.name = "intellij-plugin-highlight-split-pane"

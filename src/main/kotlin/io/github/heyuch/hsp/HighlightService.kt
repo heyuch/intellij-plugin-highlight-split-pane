@@ -1,4 +1,4 @@
-package io.github.heyuch.hfp
+package io.github.heyuch.hsp
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service

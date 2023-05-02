@@ -1,4 +1,4 @@
-package io.github.heyuch.hfp
+package io.github.heyuch.hsp
 
 import com.intellij.openapi.options.Configurable
 import org.jetbrains.annotations.Nls
@@ -91,7 +91,7 @@ class SettingsConfigurable : Configurable {
 
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String {
-        return "Highlight Focused Pane"
+        return "Highlight Split Pane"
     }
 
     override fun disposeUIResources() {

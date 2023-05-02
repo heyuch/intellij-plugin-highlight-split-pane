@@ -1,6 +1,6 @@
-# intellij-plugin-highlight-focused-pane
+# intellij-plugin-highlight-split-pane
 
-![Build](https://github.com/heyuch/intellij-plugin-highlight-focused-pane/workflows/Build/badge.svg)
+![Build](https://github.com/heyuch/intellij-plugin-highlight-split-pane/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 
@@ -24,7 +24,7 @@
   about releases containing new features and fixes.
 
 <!-- Plugin description -->
-This plugin helps identify which pane is currently focused, which is useful when opened multiple split windows with
+This plugin helps identify which pane is currently split, which is useful when opened multiple split windows with
 ideavim.
 <!-- Plugin description end -->
 
@@ -33,12 +33,12 @@ ideavim.
 - Using IDE built-in plugin system:
 
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "
-  intellij-plugin-highlight-focused-pane"</kbd> >
+  intellij-plugin-highlight-split-pane"</kbd> >
   <kbd>Install Plugin</kbd>
 
 - Manually:
 
-  Download the [latest release](https://github.com/heyuch/intellij-plugin-highlight-focused-pane/releases/latest) and
+  Download the [latest release](https://github.com/heyuch/intellij-plugin-highlight-split-pane/releases/latest) and
   install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 

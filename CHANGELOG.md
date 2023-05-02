@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# intellij-plugin-highlight-focused-pane Changelog
+# intellij-plugin-highlight-split-pane Changelog
 
 ## [Unreleased]
 ### Added
