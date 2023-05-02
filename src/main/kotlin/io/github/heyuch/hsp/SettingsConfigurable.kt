@@ -97,5 +97,4 @@ class SettingsConfigurable : Configurable {
     override fun disposeUIResources() {
         component = null
     }
-
 }

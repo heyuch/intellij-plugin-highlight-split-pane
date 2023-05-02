@@ -32,8 +32,7 @@ class RgbaColorConverter : Converter<Color>() {
             return null
         }
 
-        @Suppress("UseJBColor")
-        return Color(r, g, b, a)
+        @Suppress("UseJBColor") return Color(r, g, b, a)
     }
 
     override fun toString(value: Color): String {
@@ -61,7 +60,5 @@ class RgbaColorConverter : Converter<Color>() {
                 null
             }
         }
-
     }
-
 }

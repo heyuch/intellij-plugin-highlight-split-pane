@@ -62,9 +62,9 @@ class SettingsState : PersistentStateComponent<SettingsState> {
     }
 
     fun isModified(s: SettingsState): Boolean {
-        return enabled != s.enabled
-                || overlayLightColor != s.overlayLightColor
-                || overlayDarkColor != s.overlayDarkColor
+        return enabled != s.enabled ||
+                overlayLightColor != s.overlayLightColor ||
+                overlayDarkColor != s.overlayDarkColor
     }
 
     fun accept(s: SettingsState) {
@@ -108,7 +108,5 @@ class SettingsState : PersistentStateComponent<SettingsState> {
         fun getInstance(): SettingsState? {
             return ApplicationManager.getApplication().getService(SettingsState::class.java)
         }
-
     }
-
 }

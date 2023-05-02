@@ -137,7 +137,8 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         val mgr = FileEditorManager.getInstance(project)
         val fileEditors = mgr.allEditors
 
-        fileEditors.stream()
+        fileEditors
+            .stream()
             .filter { editor -> editor is TextEditor }
             .map { editor -> editor as TextEditor }
             .map { editor -> editor.editor }
@@ -181,7 +182,6 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         lostFocusEditor.set(null)
     }
 
-
     private fun addOverlay(editor: Editor) {
         removeOverlay(editor)
 
@@ -194,11 +194,12 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
             return
         }
 
-        val glassPane = try {
-            IdeGlassPaneUtil.find(component)
-        } catch (ignored: IllegalArgumentException) {
-            return
-        }
+        val glassPane =
+            try {
+                IdeGlassPaneUtil.find(component)
+            } catch (ignored: IllegalArgumentException) {
+                return
+            }
 
         val color = getOverlayColor()
         val painter = OverlayPainter(component, color)
@@ -250,9 +251,8 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         removeOverlaysIf { editor -> editor.isDisposed || !editor.component.isShowing }
     }
 
-    internal class OverlayPainter(
-        private var target: Component?, private val color: Color
-    ) : AbstractPainter(), Disposable {
+    internal class OverlayPainter(private var target: Component?, private val color: Color) :
+        AbstractPainter(), Disposable {
 
         override fun executePaint(component: Component?, g: Graphics2D?) {
             if (component == null || g == null || target == null) {
@@ -272,7 +272,5 @@ class HighlightService : FocusChangeListener, SettingsListener, Disposable {
         override fun dispose() {
             target = null
         }
-
     }
-
 }

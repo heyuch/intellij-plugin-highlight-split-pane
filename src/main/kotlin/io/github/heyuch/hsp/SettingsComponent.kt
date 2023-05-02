@@ -8,7 +8,6 @@ import java.awt.Color
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-
 class SettingsComponent {
 
     private var panel: JPanel? = null
@@ -20,11 +19,12 @@ class SettingsComponent {
         overlayLightColor.setSupportTransparency(true)
         overlayDarkColor.setSupportTransparency(true)
 
-        panel = FormBuilder.createFormBuilder()
-            .addComponent(enableStatus, 1)
-            .addLabeledComponent(JBLabel("Overlay color(light): "), overlayLightColor, 1, false)
-            .addLabeledComponent(JBLabel("Overlay color(dark): "), overlayDarkColor, 1, false)
-            .panel
+        panel =
+            FormBuilder.createFormBuilder()
+                .addComponent(enableStatus, 1)
+                .addLabeledComponent(JBLabel("Overlay color(light): "), overlayLightColor, 1, false)
+                .addLabeledComponent(JBLabel("Overlay color(dark): "), overlayDarkColor, 1, false)
+                .panel
     }
 
     fun getPanel(): JPanel? {
@@ -58,5 +58,4 @@ class SettingsComponent {
     fun setOverlayDarkColor(color: Color) {
         overlayDarkColor.selectedColor = color
     }
-
 }
