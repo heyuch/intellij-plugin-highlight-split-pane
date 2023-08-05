@@ -19,8 +19,10 @@
     </extensions>
 
     <applicationListeners>
-        <listener class="io.github.heyuch.hsp.AppListener"
+        <listener class="io.github.heyuch.hsp.HighlightListener"
                   topic="com.intellij.openapi.application.ApplicationActivationListener"/>
+        <listener class="io.github.heyuch.hsp.HighlightListener"
+                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
     </applicationListeners>
 
 </idea-plugin>
